@@ -14,6 +14,8 @@ func main() {
 
     r.HandleFunc("/newgame", getNewLineUp).Methods("GET")
     r.HandleFunc("/endgame", getManiskaWasher).Methods("GET")
+    
+    fmt.Print("runned")
 
 
 
