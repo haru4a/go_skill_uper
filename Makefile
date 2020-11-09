@@ -4,8 +4,10 @@ GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) gets
 
-hello:
-	echo "Hello"
 
+
+.PHONY: build
 build:
-	go build -o bin/main ./cmd/football/football.go
+	go build -v ./cmd/football
+
+.DEFAULT_GOAL := build

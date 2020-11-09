@@ -1,26 +1,53 @@
 package storage
 
 import (
-	"log"
 	"database/sql"
+
 	_ "github.com/mattn/go-sqlite3"
 )
-var DB *sql.DB
 
-//methods for working with the database.
-
-func getData(){
-	rows, err := DB.Query("")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
+// Storage ...
+type Storage struct {
+	db *sql.DB
 }
 
-func setData(){
-	rows, err := DB.Query("")
+// New ...
+func New(dbType string, dbPath string) *Storage {
+	result, err := sql.Open(dbType, dbPath)
 	if err != nil {
-		log.Fatal(err)
+		panic(err.Error())
 	}
-	defer rows.Close()
+	return &Storage{
+		db: result,
+	}
+}
+
+// AddPlayer ...
+func (s *Storage) AddPlayer(data Player) error {
+	stmt, err := s.db.Prepare("INSERT INTO players(firstname, lastname) VALUES('abc','bcd')")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec()
+	return err
+
+}
+
+// GetList ...
+func (s *Storage) GetList() []Player {
+	result, err := s.db.Query(`SELECT id, firstname, lastname from players`)
+	if err != nil {
+		panic(err.Error())
+	}
+	var players []Player
+	for result.Next() {
+		var player Player
+		err := result.Scan(&player.ID, &player.Firstname, &player.Lastname)
+		if err != nil {
+			panic(err.Error())
+		}
+		players = append(players, player)
+	}
+
+	return players
 }
