@@ -1,19 +1,27 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/go_skill_uper/pkg/apiserver"
 	"github.com/go_skill_uper/pkg/storage"
 )
 
-//Нужно будет потом раскидать функции на разные модули
-
 func main() {
-	config := apiserver.NewConfig()
-	s := storage.New(config.DBType, config.DBPath)
+	// parse values from start arguments
+	bindAddr := flag.String("port", ":8080", "Bind address :8080")
+	logLevel := flag.String("log", "debug", "Log level :debug")
+	dbFlag := flag.String("db", "./test.db", "Database path ./test.db")
+	flag.Parse()
 
-	if err := apiserver.Start(config, s); err != nil {
+	config := apiserver.NewConfig(*bindAddr, *logLevel, *dbFlag)
+
+	// create storage object
+	storageUnit := storage.New(config.DBType, config.DBPath)
+
+	//start the rest apiserver
+	if err := apiserver.Start(config, storageUnit); err != nil {
 		log.Fatal(err)
 	}
 }

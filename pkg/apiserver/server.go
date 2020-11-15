@@ -68,12 +68,10 @@ func (s *server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 func (s *server) getPlayerList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	result := s.storage.GetList()
-
 	json.NewEncoder(w).Encode(result)
 }
 
 func (s *server) addNewPlayer(w http.ResponseWriter, r *http.Request) {
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		panic(err.Error())
@@ -85,6 +83,7 @@ func (s *server) addNewPlayer(w http.ResponseWriter, r *http.Request) {
 	if err := s.storage.AddPlayer(storage.Player{ID: keyVal["ID"], Firstname: keyVal["Firstname"], Lastname: keyVal["Lastname"]}); err != nil {
 		panic(err.Error())
 	}
+
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8") // normal header
 	w.WriteHeader(http.StatusOK)
 	io.WriteString(w, "This HTTP response has both headers before this text and trailers at the end.\n")

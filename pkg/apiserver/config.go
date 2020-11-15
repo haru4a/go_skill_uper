@@ -9,11 +9,11 @@ type Config struct {
 }
 
 // NewConfig ...
-func NewConfig() *Config {
+func NewConfig(bindAddr string, logLevel string, dbFlag string) *Config {
 	return &Config{
-		BindAddr: ":8080",
-		LogLevel: "debug",
+		BindAddr: bindAddr,
+		LogLevel: logLevel,
 		DBType:   "sqlite3",
-		DBPath:   "./test.db",
+		DBPath:   dbFlag,
 	}
 }
