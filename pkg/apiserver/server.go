@@ -3,8 +3,8 @@ package apiserver
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/go_skill_uper/pkg/storage"
 	"github.com/gorilla/handlers"
@@ -48,7 +48,7 @@ func (s *server) configureRouter() {
 	s.router.HandleFunc("/player", s.getPlayerList).Methods("GET")
 	s.router.HandleFunc("/player", s.addNewPlayer).Methods("POST")
 
-	//s.router.HandleFunc("/player", s.removePlayer).Methods("DELETE")
+	s.router.HandleFunc("/player", s.removePlayer).Methods("DELETE")
 	//s.router.HandleFunc("/newgame", s.getNewLineUp).Methods("GET")
 	//s.router.HandleFunc("/endgame", s.getManiskaWasher).Methods("GET")
 
@@ -72,28 +72,46 @@ func (s *server) getPlayerList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) addNewPlayer(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+	var p storage.Player
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&p)
+
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 
-	keyVal := make(map[string]string)
-	json.Unmarshal(body, &keyVal)
-
-	if err := s.storage.AddPlayer(storage.Player{ID: keyVal["ID"], Firstname: keyVal["Firstname"], Lastname: keyVal["Lastname"]}); err != nil {
-		panic(err.Error())
-	}
+	id, err := s.storage.AddPlayer(p)
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8") // normal header
 	w.WriteHeader(http.StatusOK)
-	io.WriteString(w, "This HTTP response has both headers before this text and trailers at the end.\n")
+	io.WriteString(w, strconv.FormatInt(id, 10))
+}
+
+func (s *server) removePlayer(w http.ResponseWriter, r *http.Request) {
+	var p storage.Player
+	//p.ID = r.FormValue("id")
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&p)
+
+	if p.ID == "" {
+		http.Error(w, http.StatusText(400), 400)
+		return
+	}
+
+	id, err := s.storage.RemovePlayer(p)
+
+	if err != nil {
+		panic(err)
+	}
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8") // normal header
+	w.WriteHeader(http.StatusOK)
+	io.WriteString(w, "id:\""+strconv.FormatInt(id, 10)+"\"")
+
 }
 
 /*
-func (s *server) removePlayer(w http.ResponseWriter, r *http.Request) {
-
-}
-
 func (s *server) getNewLineUp(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Test NewLineUp route")
 }

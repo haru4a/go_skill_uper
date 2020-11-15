@@ -13,36 +13,56 @@ type Storage struct {
 
 // New ...
 func New(dbType string, dbPath string) *Storage {
-	result, err := sql.Open(dbType, dbPath)
+	database, err := sql.Open(dbType, dbPath)
 	if err != nil {
 		panic(err.Error())
 	}
+	//praparate table for players list
+	database.Exec("CREATE TABLE IF NOT EXISTS players(id INTEGER PRIMARY KEY, firstname TEXT, lastname TEXT)")
 	return &Storage{
-		db: result,
+		db: database,
 	}
 }
 
 // AddPlayer ...
-func (s *Storage) AddPlayer(data Player) error {
-	stmt, err := s.db.Prepare("INSERT INTO players(firstname, lastname) VALUES('abc','bcd')")
+func (s *Storage) AddPlayer(data Player) (int64, error) {
+	stmt, err := s.db.Prepare("INSERT INTO players(firstname, lastname) VALUES(?,?)")
 	if err != nil {
-		return err
+		return 0, err
 	}
-	_, err = stmt.Exec()
-	return err
+
+	result, err := stmt.Exec(data.Firstname, data.Lastname)
+	id, _ := result.LastInsertId()
+
+	return id, err
+
+}
+
+// RemovePlayer ...
+func (s *Storage) RemovePlayer(data Player) (int64, error) {
+	stmt, err := s.db.Prepare("DELETE FROM players WHERE id = ?")
+
+	if err != nil {
+		return 0, err
+	}
+	result, err := stmt.Exec(data.ID)
+
+	id, _ := result.RowsAffected()
+
+	return id, err
 
 }
 
 // GetList ...
 func (s *Storage) GetList() []Player {
-	result, err := s.db.Query(`SELECT id, firstname, lastname from players`)
+	rows, err := s.db.Query(`SELECT id, firstname, lastname from players`)
 	if err != nil {
 		panic(err.Error())
 	}
 	var players []Player
-	for result.Next() {
+	for rows.Next() {
 		var player Player
-		err := result.Scan(&player.ID, &player.Firstname, &player.Lastname)
+		err := rows.Scan(&player.ID, &player.Firstname, &player.Lastname)
 		if err != nil {
 			panic(err.Error())
 		}
