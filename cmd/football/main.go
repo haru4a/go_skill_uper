@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/go_skill_uper/pkg/apiserver"
@@ -19,6 +20,8 @@ func main() {
 
 	// create storage object
 	storageUnit := storage.New(config.DBType, config.DBPath)
+
+	fmt.Print("Server was started on ", *bindAddr)
 
 	//start the rest apiserver
 	if err := apiserver.Start(config, storageUnit); err != nil {
