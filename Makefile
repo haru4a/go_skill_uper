@@ -8,6 +8,6 @@ GOGET=$(GOCMD) gets
 
 .PHONY: build
 build:
-	go build -v ./cmd/football
+	go build -o ./binary/football.exe -v ./cmd/football
 
 .DEFAULT_GOAL := build
